@@ -1,0 +1,40 @@
+name: Build_Grabber_Final
+
+on:
+  push:
+  workflow_dispatch: # Permet de relancer manuellement
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.10'
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install pyinstaller requests
+
+    - name: Build EXE
+      # On vérifie si le fichier existe avant de compiler pour éviter un crash inutile
+      run: |
+        if (Test-Path "grabber_final.py") {
+          pyinstaller --onefile --noconsole grabber_final.py
+        } else {
+          Write-Error "Le fichier grabber_final.py n'a pas été trouvé à la racine du dépôt !"
+          exit 1
+        }
+
+    - name: Upload Artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: MonGrabberWindows
+        path: dist/grabber_final.exe
+        
